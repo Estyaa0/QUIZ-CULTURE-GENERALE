@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap');
+  :root{
+    --bg:#0f0f1a;--surface:#1a1a2e;--surface2:#16213e;--accent:#7c3aed;--accent2:#06b6d4;--accent3:#f59e0b;
+    --text:#f1f5f9;--text2:#94a3b8;--border:rgba(255,255,255,0.1);--card:#1e1e35;--success:#10b981;--danger:#ef4444;
+    --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;
+  }
+  .theme-gaming{
+    --bg:#000;--surface:#0d0d0d;--surface2:#111;--accent:#00ff87;--accent2:#ff0080;--accent3:#ffff00;
+    --text:#fff;--text2:#888;--border:rgba(0,255,135,0.2);--card:#0d0d0d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;height:100%;overflow:hidden;}
+  body{display:flex;flex-direction:column;}
+  #app{background:var(--bg);color:var(--text);font-family:var(--font-body);display:flex;flex-direction:column;height:100vh;transition:background 0.3s,color 0.3s;overflow:hidden;}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .logo{font-family:var(--font-head);font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .theme-btns{display:flex;gap:5px;}
+  .theme-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-family:var(--font-body);background:var(--surface2);color:var(--text2);transition:all 0.2s;}
+  .theme-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .nav{display:flex;gap:3px;padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+  .nav-btn{padding:7px 12px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-family:var(--font-body);font-weight:500;background:transparent;color:var(--text2);transition:all 0.2s;white-space:nowrap;}
+  .nav-btn.active{background:var(--accent);color:#fff;}
+  .nav-btn:hover:not(.active){background:var(--surface);color:var(--text);}
+  .screens-wrapper{flex:1;overflow-y:auto;position:relative;}
+  .screen{display:none;padding:20px;animation:fadeIn 0.25s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .section-title{font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:3px;color:var(--text);}
+  .section-sub{font-size:13px;color:var(--text2);margin-bottom:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+
+  /* QOD */
+  .question-of-day{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-radius:16px;padding:22px;margin-bottom:18px;}
+  .qod-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:8px;}
+  .qod-text{font-family:var(--font-head);font-size:17px;font-weight:700;color:#fff;margin-bottom:14px;line-height:1.4;}
+  .qod-category{display:inline-block;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;margin-bottom:14px;}
+
+  /* Explication QOD */
+  .qod-explication-box{margin-top:14px;background:rgba(0,0,0,0.25);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,0.15);}
+  .qod-explication-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:7px;}
+  .qod-explication-text{font-size:13px;color:rgba(255,255,255,0.9);line-height:1.7;}
+
+  /* Boutons */
+  .btn-primary{background:var(--accent);color:#fff;border:none;padding:10px 20px;border-radius:9px;font-size:13px;font-family:var(--font-body);font-weight:500;cursor:pointer;transition:all 0.2s;}
+  .btn-primary:hover{opacity:0.85;transform:translateY(-1px);}
+  .btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border);padding:10px 20px;border-radius:9px;font-size:13px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;margin-left:8px;}
+  .btn-secondary:hover{background:var(--surface);color:var(--text);}
+  .btn-hint{background:rgba(245,158,11,0.15);color:var(--accent3);border:1px solid rgba(245,158,11,0.35);padding:9px 16px;border-radius:9px;font-size:12px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;margin-top:10px;display:inline-flex;align-items:center;gap:6px;}
+  .btn-hint:hover{background:rgba(245,158,11,0.25);}
+  .btn-danger{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3);padding:7px 13px;border-radius:8px;font-size:12px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;}
+  .btn-danger:hover{background:rgba(239,68,68,0.25);}
+  .btn-edit{background:rgba(6,182,212,0.12);color:var(--accent2);border:1px solid rgba(6,182,212,0.3);padding:7px 13px;border-radius:8px;font-size:12px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;}
+  .btn-edit:hover{background:rgba(6,182,212,0.22);}
+
+  /* Réponse libre */
+  .answer-libre-zone{margin-top:14px;}
+  .input-answer{width:100%;padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-family:var(--font-body);outline:none;transition:border-color 0.2s;margin-bottom:8px;}
+  .input-answer:focus{border-color:var(--accent);}
+  .qcm-reveal{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+
+  /* Choix / Answers */
+  .choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .choice-btn{padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;text-align:left;}
+  .choice-btn:hover:not(:disabled){border-color:var(--accent);}
+  .choice-btn.correct{background:rgba(16,185,129,0.15);border-color:var(--success);color:var(--success);}
+  .choice-btn.wrong{background:rgba(239,68,68,0.15);border-color:var(--danger);color:var(--danger);}
+  .choice-btn:disabled{cursor:default;}
+  .vf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .vf-btn{padding:16px;border-radius:11px;border:2px solid var(--border);background:var(--surface2);color:var(--text);font-size:17px;font-family:var(--font-head);font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .vf-btn:hover:not(:disabled){border-color:var(--accent2);}
+  .vf-btn:disabled{cursor:default;}
+
+  /* Filtres catégorie */
+  .cat-filter-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .cat-pill{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;font-weight:500;}
+  .cat-pill:hover{border-color:var(--accent);color:var(--text);}
+  .cat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* Tags */
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;margin-right:4px;}
+  .tag-culture{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.3);}
+  .tag-geo{background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.3);}
+  .tag-science{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);}
+  .tag-histoire{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);}
+  .tag-sport{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+  .tag-musique{background:rgba(236,72,153,0.15);color:#f472b6;border:1px solid rgba(236,72,153,0.3);}
+  .tag-cinema{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);}
+  .tag-litterature{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);}
+  .tag-langue{background:rgba(20,184,166,0.15);color:#2dd4bf;border:1px solid rgba(20,184,166,0.3);}
+  .tag-auto{background:rgba(107,114,128,0.15);color:#9ca3af;border:1px solid rgba(107,114,128,0.3);}
+  .tag-animal{background:rgba(132,204,22,0.15);color:#a3e635;border:1px solid rgba(132,204,22,0.3);}
+
+  /* Feedback */
+  .feedback-box{padding:11px 14px;border-radius:9px;margin-top:12px;font-size:13px;font-weight:500;display:none;}
+  .feedback-box.correct-fb{background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.3);}
+  .feedback-box.wrong-fb{background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+  .feedback-box.show{display:block;}
+
+  /* Stats */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;}
+  .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;}
+  .stat-num{font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--accent);}
+  .stat-label{font-size:10px;color:var(--text2);margin-top:2px;}
+
+  /* Progress */
+  .progress-bar{height:4px;background:var(--border);border-radius:4px;margin-bottom:14px;}
+  .progress-fill{height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width 0.3s;}
+  .score-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;background:var(--surface2);font-size:12px;color:var(--accent3);font-weight:500;border:1px solid var(--border);}
+
+  /* Résultat */
+  .result-screen{text-align:center;padding:28px;}
+  .result-score{font-family:var(--font-head);font-size:52px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+  /* Formulaires */
+  .form-group{margin-bottom:12px;}
+  .form-label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block;}
+  .form-input{width:100%;padding:9px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;transition:border-color 0.2s;}
+  .form-input:focus{border-color:var(--accent);}
+  .form-select{width:100%;padding:9px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;}
+  .form-textarea{width:100%;padding:9px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;resize:vertical;min-height:80px;line-height:1.5;}
+  .form-textarea:focus{border-color:var(--accent);}
+
+  /* Catalogue */
+  .question-list{display:flex;flex-direction:column;gap:8px;}
+  .question-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .question-item-q{color:var(--text);font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.4;}
+  .question-item-a{color:var(--text2);font-size:11px;margin-bottom:8px;}
+  .question-item-actions{display:flex;gap:6px;}
+  .search-input{width:100%;padding:9px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;margin-bottom:12px;transition:border-color 0.2s;}
+  .search-input:focus{border-color:var(--accent);}
+
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:85vh;overflow-y:auto;}
+  .modal-title{font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text);margin-bottom:16px;}
+  .modal-actions{display:flex;gap:8px;margin-top:16px;}
+
+  /* Mode cards */
+  .mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+  .mode-card{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:18px;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .mode-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .mode-icon{font-size:26px;margin-bottom:8px;}
+  .mode-name{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+  .mode-desc{font-size:11px;color:var(--text2);}
+
+  /* Thèmes */
+  .themes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+  .theme-card{background:var(--card);border:2px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .theme-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
+  .theme-card.selected{border-color:var(--accent);background:rgba(124,58,237,0.1);}
+  .theme-card-icon{font-size:32px;margin-bottom:8px;}
+  .theme-card-name{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--text);}
+  .theme-card-desc{font-size:11px;color:var(--text2);margin-top:3px;}
+
+  /* Niveaux difficulté */
+  .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+  .diff-btn{padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--font-head);font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .diff-btn:hover{border-color:var(--accent2);}
+  .diff-btn.selected{border-color:var(--accent);background:rgba(124,58,237,0.12);}
+  .diff-btn .diff-icon{font-size:20px;display:block;margin-bottom:4px;}
+  .diff-btn .diff-name{font-size:12px;}
+  .diff-btn .diff-sub{font-size:10px;color:var(--text2);margin-top:2px;}
+
+  /* Info */
+  .info-box{background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:9px;padding:11px 14px;font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;}
+  .helper-box{background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.18);border-radius:11px;padding:14px 18px;margin-bottom:14px;}
+  .helper-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:7px;}
+  .helper-text{font-size:12px;color:var(--text2);line-height:1.6;}
+  pre{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:11px;font-size:11px;color:var(--accent2);overflow-x:auto;margin:7px 0;white-space:pre-wrap;}
+
+  .active-filter-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);margin-bottom:14px;font-size:12px;color:var(--accent);}
+
+  /* Save indicator */
+  .save-toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-family:var(--font-body);opacity:0;transition:opacity 0.3s;z-index:9999;pointer-events:none;}
+  .save-toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="header">
+  <div class="logo">QuizMaster</div>
+  <div class="theme-btns">
+    <button class="theme-btn active" id="t-dark" onclick="setTheme('dark')">Dark</button>
+    <button class="theme-btn" id="t-gaming" onclick="setTheme('gaming')">Gaming</button>
+  </div>
+</div>
+<div class="nav">
+  <button class="nav-btn active" onclick="showScreen('home')">Accueil</button>
+  <button class="nav-btn" onclick="showScreen('quiz')">Quiz</button>
+  <button class="nav-btn" onclick="showScreen('themes')">Thèmes</button>
+  <button class="nav-btn" onclick="showScreen('catalogue')">Mon catalogue</button>
+  <button class="nav-btn" onclick="showScreen('add')">+ Ajouter</button>
+  <button class="nav-btn" onclick="showScreen('guide')">Guide</button>
+</div>
+
+<div class="save-toast" id="save-toast">💾 Sauvegardé !</div>
+
+<!-- MODAL ÉDITION -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-title">Modifier la question</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label class="form-label">Question</label>
+      <input class="form-input" id="edit-question">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="edit-type" onchange="updateEditType()">
+        <option value="libre">Réponse libre (+ indice QCM)</option>
+        <option value="qcm">QCM uniquement</option>
+        <option value="vrai_faux">Vrai / Faux</option>
+      </select>
+    </div>
+    <div id="edit-qcm-choices">
+      <div class="form-group"><label class="form-label">Choix A</label><input class="form-input" id="ec1"></div>
+      <div class="form-group"><label class="form-label">Choix B</label><input class="form-input" id="ec2"></div>
+      <div class="form-group"><label class="form-label">Choix C</label><input class="form-input" id="ec3"></div>
+      <div class="form-group"><label class="form-label">Choix D</label><input class="form-input" id="ec4"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bonne réponse</label>
+      <input class="form-input" id="edit-answer">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="edit-category">
+        <option value="culture">Culture générale</option>
+        <option value="géographie">Géographie</option>
+        <option value="science">Science</option>
+        <option value="histoire">Histoire</option>
+        <option value="sport">Sport</option>
+        <option value="musique">Musique</option>
+        <option value="cinéma">Cinéma</option>
+        <option value="littérature">Littérature</option>
+        <option value="langue">Langue & Vocabulaire</option>
+        <option value="automobile">Automobile</option>
+        <option value="animal">Animaux</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Explication / Culture (optionnel)</label>
+      <textarea class="form-textarea" id="edit-explication" placeholder="Contexte, dates, anecdotes... affiché après la réponse sur la question du jour"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveEdit()">Sauvegarder</button>
+      <button class="btn-secondary" onclick="closeModal()">Annuler</button>
+    </div>
+    <div class="feedback-box" id="edit-feedback"></div>
+  </div>
+</div>
+
+<div class="screens-wrapper">
+
+<!-- ACCUEIL -->
+<div id="screen-home" class="screen active">
+  <div class="question-of-day" id="qod-block">
+    <div class="qod-label">Question du jour</div>
+    <div class="qod-category" id="qod-cat"></div>
+    <div class="qod-text" id="qod-question"></div>
+    <div id="qod-answer-zone"></div>
+    <div class="feedback-box" id="qod-feedback"></div>
+    <div id="qod-explication" style="display:none" class="qod-explication-box">
+      <div class="qod-explication-title">📚 Pour aller plus loin</div>
+      <div class="qod-explication-text" id="qod-explication-text"></div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Questions</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-streak" style="color:var(--accent3)">0</div><div class="stat-label">Série</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-correct" style="color:var(--success)">0%</div><div class="stat-label">Réussite</div></div>
+  </div>
+  <div class="section-title">Modes disponibles</div>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="showScreen('quiz')"><div class="mode-icon">🎯</div><div class="mode-name">Quiz rapide</div><div class="mode-desc">10 questions de ton catalogue</div></div>
+    <div class="mode-card" onclick="showScreen('themes')"><div class="mode-icon">🌍</div><div class="mode-name">Thèmes</div><div class="mode-desc">Drapeaux, capitales, et plus</div></div>
+    <div class="mode-card" onclick="showScreen('add')"><div class="mode-icon">➕</div><div class="mode-name">Ajouter</div><div class="mode-desc">Enrichir le catalogue</div></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div id="quiz-start">
+    <div class="section-title">Quiz</div>
+    <div class="section-sub">Choisis une catégorie puis lance le quiz</div>
+    <div class="card">
+      <div class="form-label" style="margin-bottom:10px;font-size:13px;color:var(--text)">Filtrer par catégorie :</div>
+      <div class="cat-filter-grid" id="cat-filters"></div>
+      <div class="active-filter-bar" id="active-filter-bar">
+        <span style="font-size:14px">🎯</span>
+        <span id="active-filter-text">Toutes les catégories sélectionnées</span>
+      </div>
+      <button class="btn-primary" onclick="startQuiz()" style="width:100%;margin-top:4px">Lancer le quiz</button>
+    </div>
+  </div>
+  <div id="quiz-playing" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="score-badge">✓ <span id="q-score">0</span></div>
+      <div style="font-size:12px;color:var(--text2)">Q <span id="q-num">1</span> / <span id="q-total">10</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="q-progress" style="width:10%"></div></div>
+    <div class="card">
+      <div class="tag" id="q-tag"></div>
+      <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin:10px 0 6px;color:var(--text);line-height:1.45" id="q-text"></div>
+      <div id="q-answers"></div>
+      <div class="feedback-box" id="q-feedback"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="nextQuestion()" id="q-next" style="display:none">Question suivante</button>
+      </div>
+    </div>
+  </div>
+  <div id="quiz-result" style="display:none">
+    <div class="result-screen">
+      <div style="font-size:36px;margin-bottom:6px">🎉</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:3px">Score final</div>
+      <div class="result-score" id="r-score">0/10</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:6px" id="r-comment"></div>
+      <button class="btn-primary" onclick="startQuiz()" style="margin-top:16px">Rejouer</button>
+      <button class="btn-secondary" onclick="showScreen('home')">Accueil</button>
+    </div>
+  </div>
+</div>
+
+<!-- THÈMES -->
+<div id="screen-themes" class="screen">
+  <div id="themes-select">
+    <div class="section-title">Thèmes</div>
+    <div class="section-sub">Choisis un thème de connaissance</div>
+    <div class="themes-grid" id="themes-grid"></div>
+  </div>
+
+  <div id="themes-difficulty" style="display:none">
+    <button class="btn-secondary" style="margin-bottom:16px;margin-left:0" onclick="document.getElementById('themes-select').style.display='block';document.getElementById('themes-difficulty').style.display='none'">← Retour</button>
+    <div class="section-title" id="diff-theme-name"></div>
+    <div class="section-sub">Choisis ton niveau de difficulté</div>
+    <div class="diff-grid">
+      <div class="diff-btn" onclick="selectDifficulty('facile')">
+        <span class="diff-icon">🟢</span>
+        <span class="diff-name">Facile</span>
+        <span class="diff-sub">Questions simples</span>
+      </div>
+      <div class="diff-btn" onclick="selectDifficulty('moyen')">
+        <span class="diff-icon">🟡</span>
+        <span class="diff-name">Moyen</span>
+        <span class="diff-sub">Questions variées</span>
+      </div>
+      <div class="diff-btn" onclick="selectDifficulty('difficile')">
+        <span class="diff-icon">🔴</span>
+        <span class="diff-name">Difficile</span>
+        <span class="diff-sub">Experts seulement</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="themes-playing" style="display:none">
+    <button class="btn-secondary" style="margin-bottom:16px;margin-left:0" onclick="document.getElementById('themes-playing').style.display='none';document.getElementById('themes-select').style.display='block'">← Quitter</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="score-badge">✓ <span id="th-score">0</span></div>
+      <div style="font-size:12px;color:var(--text2)">Q <span id="th-num">1</span>/10</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="th-progress" style="width:10%"></div></div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px" id="th-theme-label"></div>
+      <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)" id="th-question"></div>
+      <div id="th-flag" style="font-size:70px;text-align:center;margin-bottom:14px;display:none"></div>
+      <div id="th-answers" class="choices-grid"></div>
+      <div class="feedback-box" id="th-feedback"></div>
+      <button class="btn-primary" onclick="nextThemeQuestion()" id="th-next" style="display:none;margin-top:12px">Suivant</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOGUE -->
+<div id="screen-catalogue" class="screen">
+  <div class="section-title">Mon catalogue</div>
+  <div class="section-sub">Consulte, recherche et modifie tes questions</div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-num" id="cat-count">0</div><div class="stat-label">Total</div></div>
+    <div class="stat-box"><div class="stat-num" id="cat-qcm" style="color:var(--accent2)">0</div><div class="stat-label">Libre+QCM</div></div>
+    <div class="stat-box"><div class="stat-num" id="cat-autres" style="color:var(--accent3)">0</div><div class="stat-label">Vrai/Faux</div></div>
+  </div>
+  <input class="search-input" id="search-input" placeholder="Rechercher une question..." oninput="renderCatalogue()">
+  <div class="cat-filter-grid" id="cat-pills"></div>
+  <div class="question-list" id="question-list"></div>
+</div>
+
+<!-- AJOUTER -->
+<div id="screen-add" class="screen">
+  <div class="section-title">Ajouter une question</div>
+  <div class="section-sub">Enrichis ton catalogue de culture générale</div>
+  <div class="card">
+    <div class="form-group"><label class="form-label">Question</label><input class="form-input" id="new-question" placeholder="Quelle est la capitale de...?"></div>
+    <div class="form-group">
+      <label class="form-label">Type de question</label>
+      <select class="form-select" id="new-type" onchange="updateFormType()">
+        <option value="libre">Réponse libre (avec indice QCM si besoin)</option>
+        <option value="qcm">QCM uniquement</option>
+        <option value="vrai_faux">Vrai / Faux</option>
+      </select>
+    </div>
+    <div id="qcm-choices">
+      <div class="form-group"><label class="form-label">Choix A</label><input class="form-input" id="c1" placeholder="Réponse A"></div>
+      <div class="form-group"><label class="form-label">Choix B</label><input class="form-input" id="c2" placeholder="Réponse B"></div>
+      <div class="form-group"><label class="form-label">Choix C</label><input class="form-input" id="c3" placeholder="Réponse C (optionnel)"></div>
+      <div class="form-group"><label class="form-label">Choix D</label><input class="form-input" id="c4" placeholder="Réponse D (optionnel)"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Bonne réponse</label><input class="form-input" id="new-answer" placeholder="La bonne réponse exacte"></div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="new-category">
+        <option value="culture">Culture générale</option>
+        <option value="géographie">Géographie</option>
+        <option value="science">Science</option>
+        <option value="histoire">Histoire</option>
+        <option value="sport">Sport</option>
+        <option value="musique">Musique</option>
+        <option value="cinéma">Cinéma</option>
+        <option value="littérature">Littérature</option>
+        <option value="langue">Langue & Vocabulaire</option>
+        <option value="automobile">Automobile</option>
+        <option value="animal">Animaux</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">📚 Explication / Pour aller plus loin (optionnel)</label>
+      <textarea class="form-textarea" id="new-explication" placeholder="Contexte, dates clés, anecdotes... Sera affiché après la réponse sur la question du jour pour enrichir tes connaissances."></textarea>
+    </div>
+    <button class="btn-primary" onclick="addQuestion()" style="width:100%;margin-top:4px">Ajouter au catalogue</button>
+    <div class="feedback-box" id="add-feedback"></div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div id="screen-guide" class="screen">
+  <div class="section-title">Guide</div>
+  <div class="section-sub">Comment utiliser QuizMaster</div>
+  <div class="helper-box">
+    <div class="helper-title">💾 Sauvegarde automatique</div>
+    <div class="helper-text">Toutes tes questions sont sauvegardées automatiquement dans ton navigateur (localStorage). Elles seront là à chaque ouverture du fichier sur cet ordinateur.</div>
+  </div>
+  <div class="helper-box">
+    <div class="helper-title">📝 Réponse libre + indice QCM</div>
+    <div class="helper-text">Par défaut, les questions se présentent d'abord comme réponse libre. Si tu ne trouves pas, un bouton <strong>💡 Je ne sais pas</strong> affiche 4 choix pour t'aider.</div>
+  </div>
+  <div class="helper-box">
+    <div class="helper-title">📚 Question du jour + explication</div>
+    <div class="helper-text">Quand tu ajoutes une question, tu peux remplir le champ <strong>Explication</strong> avec du contexte, des dates, des anecdotes. Après avoir répondu à la question du jour, ce contenu s'affiche pour approfondir le sujet.</div>
+  </div>
+  <div class="helper-box">
+    <div class="helper-title">🌍 Thèmes (Drapeaux, Capitales...)</div>
+    <div class="helper-text">Les thèmes sont des mini-quiz indépendants de ton catalogue. Choisis un thème (drapeaux, capitales, pays, tables de multiplication...) puis sélectionne ton niveau de difficulté.</div>
+  </div>
+  <div class="helper-box">
+    <div class="helper-title">Ajouter dans le code (pour beaucoup de questions)</div>
+    <div class="helper-text">Cherche le tableau <code>let defaultQuestions = [...]</code> dans le code et ajoute :</div>
+    <pre>{id:99, question:"Ta question ?", type:"libre",
+  choices:["A","B","C","D"], answer:"B",
+  category:"culture",
+  explication:"Contexte et dates à savoir..."}</pre>
+  </div>
+</div>
+
+</div><!-- end screens-wrapper -->
+</div><!-- end app -->
+
+<script>
+/* ===== DONNÉES PAR DÉFAUT ===== */
+const defaultQuestions=[
+  {id:1,question:'Que signifie le terme "ACME" ?',type:"libre",choices:["Le début de quelque chose","L'apogée, le point extrême","Une marque américaine","Un terme médical"],answer:"L'apogée, le point extrême",category:"langue",explication:"ACME vient du grec 'akmê' signifiant 'sommet' ou 'point culminant'. En français, on parle de l'ACME d'une carrière pour désigner son apogée. Le terme est aussi connu via la marque fictive 'Acme Corporation' dans les cartoons Looney Tunes (Road Runner)."},
+  {id:2,question:"Qu'est-ce qu'un anagramme ?",type:"libre",choices:["Un mot palindrome","Mot obtenu par transposition des lettres d'un autre","Une figure de style","Un mot d'origine grecque"],answer:"Mot obtenu par transposition des lettres d'un autre mot",category:"langue",explication:"Un anagramme est un mot ou groupe de mots formé en permutant les lettres d'un autre mot. Exemples : Marie → Aimer, Chien → Niche, Écoute → Écouté. Les anagrammes sont très utilisés en cryptographie et dans les jeux de mots littéraires."},
+  {id:3,question:"Quel peintre surréaliste belge est l'auteur du tableau 'La Trahison des Images' avec 'Ceci n'est pas une pipe' ?",type:"libre",choices:["Salvador Dalí","Pablo Picasso","René Magritte","Joan Miró"],answer:"René Magritte",category:"culture",explication:"René Magritte (1898-1967) est un peintre surréaliste belge. 'La Trahison des Images' (1929) représente une pipe avec la légende 'Ceci n'est pas une pipe', questionnant la relation entre image et réalité. Magritte voulait montrer qu'une image d'un objet n'est pas l'objet lui-même."},
+  {id:4,question:"Quel est le nom du fondateur du prix Nobel ?",type:"libre",choices:["Alfred Hitchcock","Alfred Nobel","Alfred de Musset","Alfred Dreyfus"],answer:"Alfred Nobel",category:"histoire",explication:"Alfred Nobel (1833-1896) est un inventeur et chimiste suédois, notamment connu pour avoir inventé la dynamite en 1867. À sa mort, il légua sa fortune (environ 31 millions de couronnes suédoises) pour créer les Prix Nobel, décernés chaque année depuis 1901 en physique, chimie, médecine, littérature et paix."},
+  {id:5,question:"Quel nom désignant une chaussure est issu de l'italien 'scarpino' signifiant petite chaussure ?",type:"libre",choices:["Mocassins","Sandales","Escarpins","Ballerines"],answer:"Escarpins",category:"langue",explication:"L'escarpin tire son nom de l'italien 'scarpino' (diminutif de 'scarpa', chaussure). C'est une chaussure à talon haut et bout fermé, emblème de l'élégance féminine. Roger Vivier (1907-1998) est souvent considéré comme le père de l'escarpin moderne."},
+  {id:6,question:"Quel pays a été le plus titré des jeux paralympiques d'hiver de Milano-Cortina 2026 avec 44 médailles ?",type:"libre",choices:["États-Unis","Russie","Chine","Allemagne"],answer:"Chine",category:"sport",explication:"La Chine a dominé les Jeux Paralympiques d'hiver de Milano-Cortina 2026, confirmant sa montée en puissance dans le sport paralympique après ses performances impressionnantes à Pékin 2022."},
+  {id:7,question:"De combien d'épreuves se compose l'heptathlon dont Jackie Joyner-Kersee est la recordwoman ?",type:"libre",choices:["5","7","10","8"],answer:"7",category:"sport",explication:"L'heptathlon féminin comprend 7 épreuves sur 2 jours : 100m haies, saut en hauteur, lancer du poids, 200m (jour 1) ; saut en longueur, lancer du javelot, 800m (jour 2). Jackie Joyner-Kersee (USA) détient le record du monde avec 7291 points (Séoul 1988). Le décathlon masculin comporte lui 10 épreuves."},
+  {id:8,question:"Quelle lettre a laissé son nom au modèle Ford produit à partir de 1908, première automobile en série ?",type:"libre",choices:["La lettre A","La lettre T","La lettre F","La lettre M"],answer:"La lettre T",category:"automobile",explication:"La Ford Model T, surnommée 'Tin Lizzie', fut produite de 1908 à 1927. Henry Ford révolutionna l'industrie en introduisant le travail à la chaîne en 1913, faisant passer le prix de 825$ à 260$. Plus de 15 millions d'exemplaires furent produits, démocratisant l'automobile."},
+  {id:9,question:"Sur quelle île italienne se trouve le plus haut volcan d'Europe, l'Etna ?",type:"libre",choices:["Sardaigne","Corse","Sicile","Malte"],answer:"Sicile",category:"géographie",explication:"L'Etna, situé en Sicile (Italie), est le plus haut volcan actif d'Europe avec environ 3350m d'altitude (variable selon les éruptions). Il est en activité quasi permanente depuis des millénaires. La Sicile est la plus grande île de la Méditerranée, avec Palerme pour capitale."},
+  {id:10,question:"Quelle île australienne ayant pour capitale Hobart est également l'un des états du pays ?",type:"libre",choices:["Queensland","Tasmanie","Victoria","Nouvelle-Galles du Sud"],answer:"Tasmanie",category:"géographie",explication:"La Tasmanie est un état insulaire d'Australie, séparé du continent par le détroit de Bass. Sa capitale est Hobart. Elle est connue pour ses paysages sauvages préservés et le diable de Tasmanie, un marsupial carnivore unique au monde. Abel Tasman, navigateur néerlandais, l'explora en 1642."},
+  {id:11,question:"Quel groupe musical est composé d'Agnetha, Benny, Björn et Anni-Frid ?",type:"libre",choices:["The Beatles","ABBA","Queen","Bee Gees"],answer:"ABBA",category:"musique",explication:"ABBA est un groupe suédois formé en 1972, dont le nom est l'acronyme des prénoms : Agnetha Fältskog, Björn Ulvaeus, Benny Andersson, Anni-Frid Lyngstad. Leur victoire à l'Eurovision 1974 avec 'Waterloo' les lança internationalement. Ils ont vendu plus de 400 millions d'albums, ce qui en fait l'un des groupes les plus vendus de l'histoire."},
+  {id:12,question:"Quels sont les quatre membres des Beatles ?",type:"libre",choices:["Harrison, McCartney, Lennon, Starr","Jagger, Richards, Watts, Wyman","Plant, Page, Jones, Bonham","Mercury, May, Deacon, Taylor"],answer:"George Harrison, Paul McCartney, John Lennon et Ringo Starr",category:"musique",explication:"Les Beatles, formés à Liverpool en 1960, ont révolutionné la musique pop mondiale. John Lennon (guitare/voix), Paul McCartney (basse/voix), George Harrison (guitare), Ringo Starr (batterie). Ils se sont séparés en 1970 après 10 ans et plus de 600 millions d'albums vendus."},
+  {id:13,question:"Quel nom désignant le petit du cheval est aussi une marque de chocolat ?",type:"libre",choices:["Pouliche","Poulain","Poney","Yearling"],answer:"Poulain",category:"animal",explication:"Le poulain est le petit du cheval jusqu'à 2 ans. La marque Poulain, fondée en 1848 à Blois par Victor-Auguste Poulain, est une référence du chocolat français. Le célèbre 'P'tit Poulain' est une icône de la publicité française des années 1980-90."},
+  {id:14,question:"Quel camélidé domestique des Andes, cousin du lama, possédant trois fois la lettre A, est élevé pour sa toison ?",type:"libre",choices:["Vigogne","Alpaga","Guanaco","Lama"],answer:"Alpaga",category:"animal",explication:"L'alpaga (Vicugna pacos) est un camélidé domestique originaire des Andes (Pérou, Bolivie, Chili). Élevé depuis 6000 ans par les peuples andins, il produit une fibre naturelle très douce et chaude, appelée 'la fibre des dieux'. On distingue deux races : Huacaya (laine bouclée) et Suri (laine soyeuse)."},
+  {id:15,question:"Quel insecte volant appartient, tout comme la demoiselle, à l'ordre des odonates ?",type:"libre",choices:["Papillon","Libellule","Moustique","Abeille"],answer:"Libellule",category:"animal",explication:"Les odonates regroupent libellules (Anisoptera) et demoiselles (Zygoptera). Ces insectes existent depuis 300 millions d'années. Ils passent la majeure partie de leur vie à l'état larvaire aquatique (1 à 5 ans), contre quelques semaines seulement à l'état adulte ailé."},
+  {id:16,question:"Dans quelle capitale fut construit en 1863 le tout premier métro du monde ?",type:"libre",choices:["Paris","New York","Berlin","Londres"],answer:"Londres",category:"histoire",explication:"Le Metropolitan Railway, premier métro au monde, ouvrit à Londres le 10 janvier 1863 entre Paddington et Farringdon. Il utilisait initialement des locomotives à vapeur ! Le réseau londonien 'Tube' compte aujourd'hui 11 lignes et 272 stations. Le métro parisien ouvrit en 1900, celui de New York en 1904."},
+  {id:17,question:"Dans le titre du célèbre roman d'Alexandre Dumas père, combien y a-t-il de mousquetaires ?",type:"libre",choices:["2","3","4","5"],answer:"3",category:"littérature",explication:"'Les Trois Mousquetaires' (1844) d'Alexandre Dumas met en scène Athos, Porthos et Aramis — et D'Artagnan, qui aspire à les rejoindre. L'ironie veut qu'on parle de 4 héros pour 3 mousquetaires. Dumas s'inspira des 'Mémoires de M. d'Artagnan' de Gatien de Courtilz. La célèbre devise : 'Un pour tous, tous pour un !'"},
+  {id:18,question:"Quel animal est au centre du film 'La Marche de l'Empereur' de Luc Jacquet en 2005 ?",type:"libre",choices:["Pingouin","Manchot","Albatros","Phoque"],answer:"Manchot",category:"cinéma",explication:"'La Marche de l'Empereur' (2005) suit la migration annuelle des manchots empereurs en Antarctique. Attention : manchot ≠ pingouin ! Les manchots vivent dans l'hémisphère sud (Antarctique), les pingouins dans le nord (Arctique). Le film a remporté l'Oscar du meilleur documentaire en 2006."},
+  {id:19,question:"Que signifie la lettre 'D' dans l'acronyme COVID ?",type:"libre",choices:["Death","Disease","Disorder","Danger"],answer:"Disease",category:"culture",explication:"COVID signifie COrona VIrus Disease (maladie à coronavirus). Le terme fut officialisé par l'OMS le 11 février 2020. Le virus responsable est le SARS-CoV-2. Le '19' désigne l'année de son identification (2019). La pandémie a été déclarée le 11 mars 2020 par l'OMS."},
+  {id:20,question:"Quel dirigeant sud-africain a été enfermé 27 ans avant de devenir président de son pays ?",type:"libre",choices:["Desmond Tutu","Nelson Mandela","Thabo Mbeki","Chris Hani"],answer:"Nelson Mandela",category:"histoire",explication:"Nelson Mandela (1918-2013) fut emprisonné de 1964 à 1990, principalement sur l'île de Robben Island, pour sa lutte contre l'apartheid. Libéré à 71 ans, il devint le premier président noir d'Afrique du Sud (1994-1999) après les premières élections démocratiques. Il reçut le Prix Nobel de la Paix en 1993."},
+  {id:21,question:"Dans quelle ville fut organisée l'exposition universelle de 1958 pour laquelle fut construit l'Atomium ?",type:"libre",choices:["Paris","Amsterdam","Bruxelles","Genève"],answer:"Bruxelles",category:"histoire",explication:"L'Atomium fut construit pour l'Exposition universelle de Bruxelles (Expo 58), première grande expo internationale d'après-guerre. Il représente une maille d'un cristal de fer agrandie 165 milliards de fois, avec 9 sphères de 18m de diamètre. Initialement prévu pour être démoli, il est devenu le symbole de Bruxelles."},
+  {id:22,question:"Quelle entreprise américaine de la Silicon Valley a été fondée par Larry Page et Sergeï Brin en 1998 ?",type:"libre",choices:["Apple","Microsoft","Google","Yahoo"],answer:"Google",category:"culture",explication:"Google fut fondé le 4 septembre 1998 par Larry Page et Sergey Brin, alors doctorants à Stanford. Le nom vient de 'googol' (10^100). En 2015, Google devint une filiale d'Alphabet Inc. Aujourd'hui, Google traite plus de 8,5 milliards de recherches par jour et contrôle plus de 90% du marché des moteurs de recherche."},
+  {id:23,question:"Quel nom désigne en cuisine à la fois les morceaux de viande ET le pic sur lequel ils sont enfilés ?",type:"libre",choices:["Kebab","Brochettes","Satay","Yakitori"],answer:"Brochettes",category:"culture",explication:"Le mot 'brochette' désigne à la fois la pique (tige métallique ou en bois) et la préparation culinaire elle-même. Il vient du vieux français 'broche' (tige pointue). On retrouve ce concept dans toutes les cuisines du monde : kebab turc, satay asiatique, yakitori japonais, souvlaki grec..."},
+];
+
+/* ===== THÈMES ===== */
+const themesConfig=[
+  {id:'drapeaux',icon:'🚩',name:'Drapeaux',desc:'Reconnais le drapeau du pays',color:'#7c3aed'},
+  {id:'capitales',icon:'🏛️',name:'Capitales',desc:'Quelle est la capitale de ce pays ?',color:'#06b6d4'},
+  {id:'pays',icon:'🗺️',name:'Pays du monde',desc:'De quelle capitale est ce pays ?',color:'#10b981'},
+  {id:'multiplication',icon:'✖️',name:'Tables de multiplication',desc:'Calcul mental rapide',color:'#f59e0b'},
+  {id:'chimie',icon:'⚗️',name:'Tableau périodique',desc:'Symboles et numéros atomiques',color:'#ef4444'},
+  {id:'anatomie',icon:'🫀',name:'Corps humain',desc:'Organes et fonctions',color:'#ec4899'},
+  {id:'astronomie',icon:'🪐',name:'Astronomie',desc:'Planètes, étoiles et galaxies',color:'#6366f1'},
+  {id:'langues',icon:'🗣️',name:'Langues du monde',desc:'Mots et expressions',color:'#14b8a6'},
+];
+
+const countries=[
+  {pays:"France",capitale:"Paris",flag:"🇫🇷",diff:"facile"},
+  {pays:"Allemagne",capitale:"Berlin",flag:"🇩🇪",diff:"facile"},
+  {pays:"Espagne",capitale:"Madrid",flag:"🇪🇸",diff:"facile"},
+  {pays:"Italie",capitale:"Rome",flag:"🇮🇹",diff:"facile"},
+  {pays:"Japon",capitale:"Tokyo",flag:"🇯🇵",diff:"facile"},
+  {pays:"Brésil",capitale:"Brasília",flag:"🇧🇷",diff:"moyen"},
+  {pays:"Canada",capitale:"Ottawa",flag:"🇨🇦",diff:"moyen"},
+  {pays:"Australie",capitale:"Canberra",flag:"🇦🇺",diff:"moyen"},
+  {pays:"Mexique",capitale:"Mexico",flag:"🇲🇽",diff:"moyen"},
+  {pays:"Inde",capitale:"New Delhi",flag:"🇮🇳",diff:"moyen"},
+  {pays:"Chine",capitale:"Pékin",flag:"🇨🇳",diff:"moyen"},
+  {pays:"États-Unis",capitale:"Washington D.C.",flag:"🇺🇸",diff:"facile"},
+  {pays:"Russie",capitale:"Moscou",flag:"🇷🇺",diff:"facile"},
+  {pays:"Égypte",capitale:"Le Caire",flag:"🇪🇬",diff:"moyen"},
+  {pays:"Maroc",capitale:"Rabat",flag:"🇲🇦",diff:"moyen"},
+  {pays:"Portugal",capitale:"Lisbonne",flag:"🇵🇹",diff:"facile"},
+  {pays:"Pays-Bas",capitale:"Amsterdam",flag:"🇳🇱",diff:"facile"},
+  {pays:"Suède",capitale:"Stockholm",flag:"🇸🇪",diff:"facile"},
+  {pays:"Suisse",capitale:"Berne",flag:"🇨🇭",diff:"moyen"},
+  {pays:"Argentine",capitale:"Buenos Aires",flag:"🇦🇷",diff:"moyen"},
+  {pays:"Pakistan",capitale:"Islamabad",flag:"🇵🇰",diff:"difficile"},
+  {pays:"Nigeria",capitale:"Abuja",flag:"🇳🇬",diff:"difficile"},
+  {pays:"Éthiopie",capitale:"Addis-Abeba",flag:"🇪🇹",diff:"difficile"},
+  {pays:"Bangladesh",capitale:"Dacca",flag:"🇧🇩",diff:"difficile"},
+  {pays:"Kazakhstan",capitale:"Astana",flag:"🇰🇿",diff:"difficile"},
+  {pays:"Ouzbékistan",capitale:"Tachkent",flag:"🇺🇿",diff:"difficile"},
+  {pays:"Myanmar",capitale:"Naypyidaw",flag:"🇲🇲",diff:"difficile"},
+  {pays:"Ghana",capitale:"Accra",flag:"🇬🇭",diff:"difficile"},
+  {pays:"Tanzanie",capitale:"Dodoma",flag:"🇹🇿",diff:"difficile"},
+  {pays:"Bolivie",capitale:"Sucre",flag:"🇧🇴",diff:"difficile"},
+];
+
+const multiplicationData={
+  facile:[[2,2],[2,3],[2,4],[2,5],[3,3],[3,4],[5,5],[2,6],[2,7],[3,5]],
+  moyen:[[6,7],[7,8],[8,9],[6,6],[7,7],[8,8],[9,9],[6,8],[4,7],[5,8]],
+  difficile:[[12,12],[11,13],[9,14],[13,13],[12,15],[11,14],[15,15],[9,16],[12,13],[14,14]]
+};
+
+const chimieData={
+  facile:[{sym:"H",name:"Hydrogène",num:1},{sym:"O",name:"Oxygène",num:8},{sym:"C",name:"Carbone",num:6},{sym:"N",name:"Azote",num:7},{sym:"Fe",name:"Fer",num:26},{sym:"Au",name:"Or",num:79},{sym:"Ag",name:"Argent",num:47},{sym:"Na",name:"Sodium",num:11},{sym:"Ca",name:"Calcium",num:20},{sym:"K",name:"Potassium",num:19}],
+  moyen:[{sym:"Cu",name:"Cuivre",num:29},{sym:"Pb",name:"Plomb",num:82},{sym:"Hg",name:"Mercure",num:80},{sym:"S",name:"Soufre",num:16},{sym:"Cl",name:"Chlore",num:17},{sym:"Mg",name:"Magnésium",num:12},{sym:"Al",name:"Aluminium",num:13},{sym:"P",name:"Phosphore",num:15},{sym:"Zn",name:"Zinc",num:30},{sym:"Sn",name:"Étain",num:50}],
+  difficile:[{sym:"Xe",name:"Xénon",num:54},{sym:"Pt",name:"Platine",num:78},{sym:"Bi",name:"Bismuth",num:83},{sym:"Mn",name:"Manganèse",num:25},{sym:"Cr",name:"Chrome",num:24},{sym:"Ti",name:"Titane",num:22},{sym:"W",name:"Tungstène",num:74},{sym:"Mo",name:"Molybdène",num:42},{sym:"Rb",name:"Rubidium",num:37},{sym:"Cs",name:"Césium",num:55}]
+};
+
+const anatomieData={
+  facile:[{q:"Quel organe pompe le sang dans tout le corps ?",a:"Le cœur"},{q:"Quel organe filtre le sang et produit l'urine ?",a:"Le rein"},{q:"Quel organe permet la respiration ?",a:"Le poumon"},{q:"Où se déroule la digestion des aliments ?",a:"L'intestin"},{q:"Quel organe stocke la bile ?",a:"La vésicule biliaire"},{q:"Quel est le plus grand organe du corps humain ?",a:"La peau"},{q:"Quel organe contrôle l'ensemble du corps humain ?",a:"Le cerveau"},{q:"Combien d'os contient le corps humain adulte ?",a:"206 os"},{q:"Quel muscle permet la respiration en se contractant ?",a:"Le diaphragme"},{q:"Quelle glande produit l'insuline ?",a:"Le pancréas"}],
+  moyen:[{q:"Dans quel lobe du cerveau se trouve le cortex visuel ?",a:"Lobe occipital"},{q:"Quel vaisseau sanguin part du ventricule gauche ?",a:"L'aorte"},{q:"Comment appelle-t-on les globules blancs ?",a:"Leucocytes"},{q:"Quel nerf relie l'œil au cerveau ?",a:"Nerf optique"},{q:"Où se trouve l'amygdale dans le corps ?",a:"Dans la gorge (et aussi dans le cerveau)"},{q:"Combien de vertèbres compte la colonne vertébrale ?",a:"33 vertèbres"},{q:"Quel organe produit la bile ?",a:"Le foie"},{q:"Comment s'appelle le liquide qui entoure le cerveau ?",a:"Liquide céphalorachidien"},{q:"Quelle hormone régule le calcium ?",a:"La parathormone (PTH)"},{q:"Quel os est le plus long du corps ?",a:"Le fémur"}],
+  difficile:[{q:"Quelle enzyme intestinale dégrade les protéines ?",a:"La trypsine"},{q:"Comment s'appelle la valve entre l'estomac et l'intestin ?",a:"Le pylore"},{q:"Quel nerf crânien contrôle la déglutition ?",a:"Le nerf vague (X)"},{q:"Quelle cellule produit le collagène ?",a:"Le fibroblaste"},{q:"Comment s'appelle la membrane entourant le cœur ?",a:"Le péricarde"},{q:"Quel segment d'ADN code pour une protéine ?",a:"Un gène"},{q:"Quelle structure forme la barrière hémato-encéphalique ?",a:"Les cellules endothéliales des capillaires cérébraux"},{q:"Quel os de la face est mobile ?",a:"La mandibule (mâchoire inférieure)"},{q:"Quelle hormone est sécrétée par l'hypophyse pour stimuler la thyroïde ?",a:"La TSH (thyrotropine)"},{q:"Comment s'appelle le pore de la membrane cellulaire ?",a:"Un canal ionique"}]
+};
+
+const astronomieData={
+  facile:[{q:"Quelle est la planète la plus proche du Soleil ?",a:"Mercure"},{q:"Quelle planète est surnommée la 'planète rouge' ?",a:"Mars"},{q:"Combien de planètes compte notre système solaire ?",a:"8 planètes"},{q:"Quel est le nom de notre galaxie ?",a:"La Voie lactée"},{q:"Quelle est la plus grande planète du système solaire ?",a:"Jupiter"},{q:"Combien de temps met la lumière du Soleil pour atteindre la Terre ?",a:"8 minutes environ"},{q:"Qu'est-ce qu'une étoile filante ?",a:"Un météore qui brûle dans l'atmosphère"},{q:"Quelle planète possède les anneaux les plus visibles ?",a:"Saturne"},{q:"Combien de lunes possède la Terre ?",a:"1 lune"},{q:"Qui fut le premier homme à marcher sur la Lune ?",a:"Neil Armstrong (1969)"}],
+  moyen:[{q:"Quelle est la distance moyenne Terre-Soleil ?",a:"150 millions de km (1 UA)"},{q:"Qu'est-ce qu'une année-lumière ?",a:"La distance parcourue par la lumière en un an : 9 461 milliards de km"},{q:"Quel est le plus grand volcan du système solaire ?",a:"L'Olympus Mons sur Mars"},{q:"Combien de lunes possède Jupiter ?",a:"Plus de 90 lunes"},{q:"Qu'est-ce qu'un trou noir ?",a:"Un objet dont la gravité est si forte que rien, pas même la lumière, n'en échappe"},{q:"Quelle planète tourne sur le côté (axe incliné à 98°) ?",a:"Uranus"},{q:"Comment s'appelle la sonde qui a quitté le système solaire en 2012 ?",a:"Voyager 1"},{q:"Qu'est-ce qu'une naine brune ?",a:"Un objet trop petit pour être une étoile mais trop grand pour être une planète"},{q:"Quelle est la constellation la plus visible depuis la Terre ?",a:"Orion"},{q:"Qu'est-ce que le fond diffus cosmologique ?",a:"Le rayonnement résidu du Big Bang, observable partout dans l'univers"}],
+  difficile:[{q:"Qu'est-ce que l'effet Doppler-Fizeau en astronomie ?",a:"Le décalage de fréquence d'une onde selon le mouvement relatif source-observateur"},{q:"Quelle est la magnitude absolue du Soleil ?",a:"+4,83"},{q:"Qu'est-ce qu'un pulsar ?",a:"Une étoile à neutrons en rotation rapide émettant des faisceaux électromagnétiques"},{q:"Comment s'appelle la limite entre une étoile et son espace interstellaire ?",a:"L'héliopause"},{q:"Qu'est-ce que la parallaxe en astronomie ?",a:"La méthode de mesure de distance basée sur la différence de position angulaire d'un astre"},{q:"Qu'est-ce que la nucléosynthèse stellaire ?",a:"La formation des éléments chimiques lourds au cœur des étoiles par fusion nucléaire"},{q:"Qu'est-ce que la constante de Hubble ?",a:"Le taux d'expansion de l'univers (~70 km/s/Mpc)"},{q:"Qu'est-ce qu'une céphéide ?",a:"Une étoile variable dont la période de pulsation est liée à sa luminosité absolue"},{q:"Qu'est-ce que l'énergie noire ?",a:"Une énergie hypothétique responsable de l'accélération de l'expansion de l'univers"},{q:"Comment s'appelle le phénomène quand une étoile explose en fin de vie ?",a:"Une supernova"}]
+};
+
+const languesData={
+  facile:[{q:"Comment dit-on 'Merci' en espagnol ?",a:"Gracias"},{q:"Comment dit-on 'Bonjour' en allemand ?",a:"Guten Tag"},{q:"Comment dit-on 'Oui' en japonais ?",a:"Hai"},{q:"Comment dit-on 'S'il vous plaît' en italien ?",a:"Per favore"},{q:"Comment dit-on 'Au revoir' en anglais ?",a:"Goodbye"},{q:"Comment dit-on 'Non' en russe ?",a:"Nyet (Нет)"},{q:"Comment dit-on 'Bonne nuit' en portugais ?",a:"Boa noite"},{q:"Comment dit-on 'Merci' en arabe ?",a:"Shukran (شكراً)"},{q:"Comment dit-on 'Bonjour' en mandarin ?",a:"Nǐ hǎo (你好)"},{q:"Comment dit-on 'Amour' en italien ?",a:"Amore"}],
+  moyen:[{q:"Que signifie 'Carpe diem' en latin ?",a:"Cueille le jour / Profite du moment présent"},{q:"Que signifie 'Schadenfreude' en allemand ?",a:"La joie procurée par le malheur d'autrui"},{q:"Que signifie 'Saudade' en portugais ?",a:"Un sentiment de nostalgie et de mélancolie pour quelque chose d'absent"},{q:"Que signifie 'Savoir-faire' utilisé en anglais ?",a:"Habileté pratique, capacité à faire les choses correctement"},{q:"Comment dit-on 'Liberté' en swahili ?",a:"Uhuru"},{q:"Que signifie 'Zeitgeist' en allemand ?",a:"L'esprit du temps, la tendance culturelle d'une époque"},{q:"Comment s'écrit 'Je t'aime' en hébreu ?",a:"Ani ohev otach (אני אוהב אותך)"},{q:"Que signifie 'Serendipity' en anglais ?",a:"La faculté de faire des découvertes heureuses par hasard"},{q:"Comment dit-on 'Courage' en japonais ?",a:"Yuuki (勇気)"},{q:"Que signifie 'Déjà vu' utilisé en anglais ?",a:"L'impression d'avoir déjà vécu une situation identique"}],
+  difficile:[{q:"Que signifie 'Hiraeth' en gallois ?",a:"Une nostalgie profonde pour un lieu ou moment du passé qu'on ne peut retrouver"},{q:"Que signifie 'Mamihlapinatapai' en yaghane ?",a:"Regard partagé entre deux personnes désirant la même chose sans oser l'initier"},{q:"Que signifie 'Wabi-sabi' en japonais ?",a:"La beauté de l'imperfection et de l'impermanence"},{q:"Que signifie 'Torschlusspanik' en allemand ?",a:"La panique de voir ses opportunités se fermer avec l'âge"},{q:"Que signifie 'Jayus' en indonésien ?",a:"Une blague tellement nulle qu'on finit par en rire quand même"},{q:"Que signifie 'Gattara' en italien ?",a:"Une vieille dame qui nourrit les chats errants"},{q:"Que signifie 'Forelsket' en norvégien ?",a:"L'euphorie ressentie quand on tombe amoureux"},{q:"Que signifie 'L'esprit de l'escalier' utilisé en anglais ?",a:"Trouver la réplique parfaite trop tard, après la conversation"},{q:"Que signifie 'Toska' en russe ?",a:"Une mélancolie spirituelle intense, un manque difficile à définir"},{q:"Que signifie 'Iktsuarpok' en inuktitut ?",a:"L'impatience d'attendre quelqu'un, aller constamment regarder si c'est lui"}]
+};
+
+/* ===== STATE ===== */
+const catList=['all','culture','géographie','science','histoire','sport','musique','cinéma','littérature','langue','automobile','animal'];
+const catLabels={all:'Toutes',culture:'Culture',géographie:'Géographie',science:'Science',histoire:'Histoire',sport:'Sport',musique:'Musique','cinéma':'Cinéma','littérature':'Littérature',langue:'Langue',automobile:'Automobile',animal:'Animaux'};
+const catTagMap={culture:'tag-culture',géographie:'tag-geo',science:'tag-science',histoire:'tag-histoire',sport:'tag-sport',musique:'tag-musique','cinéma':'tag-cinema','littérature':'tag-litterature',langue:'tag-langue',automobile:'tag-auto',animal:'tag-animal'};
+
+let questions=[];
+let stats={correct:0,total:0,streak:0};
+let selectedCatFilter='all';
+let selectedCatCatalogue='all';
+let quizQuestions=[],quizIndex=0,quizScore=0;
+let qodAnswered=false,nextId=500;
+let currentTheme=null,currentDifficulty=null;
+let themeData=[],themeIndex=0,themeScore=0;
+
+/* ===== LOCALSTORAGE ===== */
+function saveData(){
+  try{
+    localStorage.setItem('quizmaster_questions',JSON.stringify(questions));
+    localStorage.setItem('quizmaster_stats',JSON.stringify(stats));
+    localStorage.setItem('quizmaster_nextid',nextId);
+    showToast();
+  }catch(e){console.warn('Sauvegarde impossible',e);}
+}
+
+function loadData(){
+  try{
+    const q=localStorage.getItem('quizmaster_questions');
+    const s=localStorage.getItem('quizmaster_stats');
+    const nid=localStorage.getItem('quizmaster_nextid');
+    if(q){questions=JSON.parse(q);}else{questions=[...defaultQuestions];saveData();}
+    if(s){stats=JSON.parse(s);}
+    if(nid){nextId=parseInt(nid);}
+  }catch(e){questions=[...defaultQuestions];}
+}
+
+function showToast(){
+  const t=document.getElementById('save-toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ===== THEME UI ===== */
+function setTheme(t){
+  document.getElementById('app').className=t==='gaming'?'theme-gaming':'';
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('t-'+t).classList.add('active');
+}
+
+/* ===== NAVIGATION ===== */
+function showScreen(s){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('screen-'+s).classList.add('active');
+  const map={home:0,quiz:1,themes:2,catalogue:3,add:4,guide:5};
+  if(map[s]!==undefined)document.querySelectorAll('.nav-btn')[map[s]].classList.add('active');
+  if(s==='catalogue')renderCatalogue();
+  if(s==='home'){renderStats();renderQOD();}
+  if(s==='quiz'){buildCatFilters();resetQuizView();}
+  if(s==='themes'){renderThemesGrid();}
+}
+
+function resetQuizView(){
+  document.getElementById('quiz-start').style.display='block';
+  document.getElementById('quiz-playing').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+}
+
+function getTag(cat){return catTagMap[cat]||'tag-culture';}
+
+function renderStats(){
+  document.getElementById('stat-total').textContent=questions.length;
+  document.getElementById('stat-streak').textContent=stats.streak;
+  const pct=stats.total>0?Math.round(stats.correct/stats.total*100):0;
+  document.getElementById('stat-correct').textContent=pct+'%';
+}
+
+/* ===== FILTRES ===== */
+function buildCatFilters(){
+  const el=document.getElementById('cat-filters');
+  if(!el)return;
+  el.innerHTML='';
+  catList.forEach(c=>{
+    const count=c==='all'?questions.length:questions.filter(q=>q.category===c).length;
+    if(count===0&&c!=='all')return;
+    const btn=document.createElement('button');
+    btn.className='cat-pill'+(selectedCatFilter===c?' active':'');
+    btn.innerHTML=catLabels[c]+' <span style="opacity:0.6;font-size:10px">('+count+')</span>';
+    btn.onclick=()=>{selectedCatFilter=c;buildCatFilters();updateActiveFilterBar();};
+    el.appendChild(btn);
+  });
+  updateActiveFilterBar();
+}
+
+function updateActiveFilterBar(){
+  const bar=document.getElementById('active-filter-bar');
+  if(selectedCatFilter==='all'){
+    bar.innerHTML='<span style="font-size:14px">🎯</span> <span>Toutes les catégories — '+questions.length+' questions disponibles</span>';
+  }else{
+    const count=questions.filter(q=>q.category===selectedCatFilter).length;
+    bar.innerHTML='<span style="font-size:14px">🔍</span> <span>Catégorie <strong>'+catLabels[selectedCatFilter]+'</strong> — '+count+' question'+(count>1?'s':'')+' disponible'+(count>1?'s':'')+'</span>';
+  }
+}
+
+/* ===== QUESTION DU JOUR ===== */
+function renderQOD(){
+  const today=new Date();
+  const seed=today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
+  const q=questions[seed%questions.length];
+  document.getElementById('qod-cat').textContent=q.category;
+  document.getElementById('qod-question').textContent=q.question;
+  qodAnswered=false;
+  document.getElementById('qod-feedback').className='feedback-box';
+  document.getElementById('qod-explication').style.display='none';
+  const zone=document.getElementById('qod-answer-zone');
+  zone.innerHTML='';
+  buildQODLibreUI(q,zone,'qod-feedback');
+}
+
+function buildQODLibreUI(q,container,fbId){
+  const inp=document.createElement('input');
+  inp.className='input-answer';
+  inp.placeholder='Ta réponse...';
+  inp.style.background='rgba(255,255,255,0.15)';
+  inp.style.borderColor='rgba(255,255,255,0.3)';
+  inp.style.color='#fff';
+  inp.style.marginBottom='8px';
+  container.appendChild(inp);
+
+  const valider=document.createElement('button');
+  valider.className='btn-primary';
+  valider.textContent='Valider';
+  valider.style.background='rgba(255,255,255,0.25)';
+  valider.style.border='1px solid rgba(255,255,255,0.4)';
+  container.appendChild(valider);
+
+  valider.onclick=()=>{
+    if(qodAnswered)return;
+    const given=inp.value.trim();
+    if(!given)return;
+    qodAnswered=true;
+    inp.disabled=true;valider.disabled=true;
+    const ok=given.toLowerCase().trim()===q.answer.toLowerCase().trim();
+    const fb=document.getElementById(fbId);
+    fb.className='feedback-box show '+(ok?'correct-fb':'wrong-fb');
+    fb.textContent=ok?'✓ Correct !':'✗ Faux — Bonne réponse : '+q.answer;
+    stats.total++;
+    if(ok){stats.correct++;stats.streak++;}else{stats.streak=0;}
+    saveData();
+    renderStats();
+    if(q.explication&&q.explication.trim()){
+      document.getElementById('qod-explication-text').textContent=q.explication;
+      document.getElementById('qod-explication').style.display='block';
+    }
+  };
+
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')valider.click();});
+}
+
+/* ===== RÉPONSE UI QUIZ ===== */
+function buildAnswerUI(q,container,fbId,onCorrect){
+  if(q.type==='vrai_faux'){
+    buildVFUI(q,container,fbId,onCorrect);
+  } else if(q.type==='qcm'){
+    buildQCMUI(q,container,fbId,onCorrect,false);
+  } else {
+    // libre (avec indice QCM)
+    buildLibreUI(q,container,fbId,onCorrect);
+  }
+}
+
+function buildLibreUI(q,container,fbId,onCorrect){
+  const zone=document.createElement('div');
+  zone.className='answer-libre-zone';
+
+  const inp=document.createElement('input');
+  inp.className='input-answer';
+  inp.placeholder='Ta réponse...';
+  zone.appendChild(inp);
+
+  const row=document.createElement('div');
+  row.style.display='flex';row.style.gap='8px';row.style.flexWrap='wrap';
+  zone.appendChild(row);
+
+  const valider=document.createElement('button');
+  valider.className='btn-primary';valider.textContent='Valider';
+  row.appendChild(valider);
+
+  const hintBtn=document.createElement('button');
+  hintBtn.className='btn-hint';hintBtn.innerHTML='💡 Je ne sais pas';
+  row.appendChild(hintBtn);
+
+  hintBtn.onclick=()=>{
+    hintBtn.style.display='none';
+    inp.disabled=true;valider.disabled=true;
+    const reveal=document.createElement('div');
+    reveal.className='qcm-reveal';
+    const fakeChoices=q.choices&&q.choices.length>=2?q.choices:generateFakeChoices(q.answer);
+    const fakeQ={...q,type:'qcm',choices:fakeChoices};
+    buildQCMUI(fakeQ,reveal,fbId,onCorrect,true);
+    zone.appendChild(reveal);
+  };
+
+  valider.onclick=()=>{
+    const given=inp.value.trim();
+    if(!given)return;
+    handleAnswer(given,q.answer,fbId,onCorrect,zone);
+  };
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')valider.click();});
+  container.appendChild(zone);
+}
+
+function generateFakeChoices(answer){
+  const pool=questions.map(q=>q.answer).filter(a=>a!==answer&&a.length<50);
+  const fakes=pool.sort(()=>Math.random()-0.5).slice(0,3);
+  const all=[answer,...fakes].sort(()=>Math.random()-0.5);
+  return all;
+}
+
+function buildQCMUI(q,container,fbId,onCorrect,isReveal){
+  const g=document.createElement('div');
+  g.className='choices-grid';
+  const shuffled=[...q.choices].sort(()=>Math.random()-0.5);
+  shuffled.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';btn.textContent=c;
+    btn.onclick=()=>{
+      handleAnswer(c,q.answer,fbId,onCorrect,g);
+      g.querySelectorAll('.choice-btn').forEach(b=>{
+        b.disabled=true;
+        if(b.textContent===q.answer)b.classList.add('correct');
+        else if(b.textContent===c&&c!==q.answer)b.classList.add('wrong');
+      });
+    };
+    g.appendChild(btn);
+  });
+  container.appendChild(g);
+}
+
+function buildVFUI(q,container,fbId,onCorrect){
+  const g=document.createElement('div');
+  g.className='vf-grid';
+  ['Vrai','Faux'].forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='vf-btn';btn.textContent=v;
+    btn.onclick=()=>{
+      handleAnswer(v,q.answer,fbId,onCorrect,g);
+      g.querySelectorAll('.vf-btn').forEach(b=>{
+        b.disabled=true;
+        if(b.textContent===q.answer)b.classList.add('correct');
+        else if(b.textContent===v&&v!==q.answer)b.classList.add('wrong');
+      });
+    };
+    g.appendChild(btn);
+  });
+  container.appendChild(g);
+}
+
+function handleAnswer(given,correct,fbId,onCorrect,container){
+  const ok=given.toLowerCase().trim()===correct.toLowerCase().trim();
+  const fb=document.getElementById(fbId);
+  fb.className='feedback-box show '+(ok?'correct-fb':'wrong-fb');
+  fb.textContent=ok?'✓ Correct !':'✗ Faux — Bonne réponse : '+correct;
+  stats.total++;
+  if(ok){stats.correct++;stats.streak++;}else{stats.streak=0;}
+  saveData();
+  if(container)container.querySelectorAll('button,input').forEach(el=>el.disabled=true);
+  document.getElementById('q-next').style.display='inline-block';
+  if(onCorrect)onCorrect(ok);
+  renderStats();
+}
+
+/* ===== QUIZ ===== */
+function startQuiz(){
+  let pool=selectedCatFilter==='all'?[...questions]:questions.filter(q=>q.category===selectedCatFilter);
+  if(pool.length<1){alert('Aucune question dans cette catégorie !');return;}
+  quizQuestions=pool.sort(()=>Math.random()-0.5).slice(0,Math.min(10,pool.length));
+  quizIndex=0;quizScore=0;
+  document.getElementById('quiz-start').style.display='none';
+  document.getElementById('quiz-playing').style.display='block';
+  document.getElementById('quiz-result').style.display='none';
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  const q=quizQuestions[quizIndex];
+  const total=quizQuestions.length;
+  document.getElementById('q-num').textContent=quizIndex+1;
+  document.getElementById('q-total').textContent=total;
+  document.getElementById('q-score').textContent=quizScore;
+  document.getElementById('q-progress').style.width=((quizIndex+1)/total*100)+'%';
+  document.getElementById('q-tag').textContent=q.category;
+  document.getElementById('q-tag').className='tag '+getTag(q.category);
+  document.getElementById('q-text').textContent=q.question;
+  document.getElementById('q-feedback').className='feedback-box';
+  document.getElementById('q-next').style.display='none';
+  const ans=document.getElementById('q-answers');
+  ans.innerHTML='';
+  buildAnswerUI(q,ans,'q-feedback',(ok)=>{if(ok)quizScore++;document.getElementById('q-score').textContent=quizScore;});
+}
+
+function nextQuestion(){
+  quizIndex++;
+  if(quizIndex>=quizQuestions.length){
+    document.getElementById('quiz-playing').style.display='none';
+    document.getElementById('quiz-result').style.display='block';
+    const t=quizQuestions.length;
+    document.getElementById('r-score').textContent=quizScore+'/'+t;
+    const pct=Math.round(quizScore/t*100);
+    document.getElementById('r-comment').textContent=pct>=80?'Excellent ! 🌟':pct>=60?'Bien joué ! 👍':pct>=40?'Pas mal, continue !':'Révise encore un peu !';
+  }else renderQuizQuestion();
+}
+
+/* ===== THÈMES ===== */
+function renderThemesGrid(){
+  document.getElementById('themes-select').style.display='block';
+  document.getElementById('themes-difficulty').style.display='none';
+  document.getElementById('themes-playing').style.display='none';
+  const grid=document.getElementById('themes-grid');
+  grid.innerHTML='';
+  themesConfig.forEach(th=>{
+    const card=document.createElement('div');
+    card.className='theme-card';
+    card.innerHTML=`<div class="theme-card-icon">${th.icon}</div><div class="theme-card-name">${th.name}</div><div class="theme-card-desc">${th.desc}</div>`;
+    card.style.borderColor=th.color+'44';
+    card.onclick=()=>selectTheme(th);
+    grid.appendChild(card);
+  });
+}
+
+function selectTheme(th){
+  currentTheme=th;
+  document.getElementById('diff-theme-name').textContent=th.icon+' '+th.name;
+  document.getElementById('themes-select').style.display='none';
+  document.getElementById('themes-difficulty').style.display='block';
+}
+
+function selectDifficulty(diff){
+  currentDifficulty=diff;
+  buildThemeData();
+  themeIndex=0;themeScore=0;
+  document.getElementById('themes-difficulty').style.display='none';
+  document.getElementById('themes-playing').style.display='block';
+  document.getElementById('th-theme-label').textContent=currentTheme.icon+' '+currentTheme.name+' — '+diff;
+  renderThemeQuestion();
+}
+
+function buildThemeData(){
+  const id=currentTheme.id;
+  const diff=currentDifficulty;
+  if(id==='drapeaux'||id==='capitales'||id==='pays'){
+    let pool;
+    if(diff==='facile')pool=countries.filter(c=>c.diff==='facile');
+    else if(diff==='moyen')pool=countries.filter(c=>c.diff==='facile'||c.diff==='moyen');
+    else pool=[...countries];
+    themeData=pool.sort(()=>Math.random()-0.5).slice(0,10).map(c=>{
+      if(id==='drapeaux'){return{question:'De quel pays est ce drapeau ?',flag:c.flag,answer:c.pays,options:countries.map(x=>x.pays)};}
+      if(id==='capitales'){return{question:'Quelle est la capitale de '+c.pays+' ?',flag:null,answer:c.capitale,options:countries.map(x=>x.capitale)};}
+      return{question:'À quel pays appartient la capitale "'+c.capitale+'" ?',flag:null,answer:c.pays,options:countries.map(x=>x.pays)};
+    });
+  } else if(id==='multiplication'){
+    const pool=multiplicationData[diff];
+    themeData=pool.slice(0,10).map(([a,b])=>{
+      const correct=String(a*b);
+      const fakes=[];
+      while(fakes.length<3){const f=String(a*b+(Math.floor(Math.random()*10)-5));if(f!==correct&&!fakes.includes(f))fakes.push(f);}
+      return{question:a+' × '+b+' = ?',flag:null,answer:correct,options:[correct,...fakes].sort(()=>Math.random()-0.5)};
+    });
+  } else if(id==='chimie'){
+    const pool=chimieData[diff];
+    themeData=pool.slice(0,10).map(el=>{
+      const correct=el.name;
+      const fakes=chimieData[diff].map(e=>e.name).filter(n=>n!==correct).sort(()=>Math.random()-0.5).slice(0,3);
+      return{question:'Quel est l\'élément chimique de symbole "'+el.sym+'" (numéro atomique '+el.num+') ?',flag:null,answer:correct,options:[correct,...fakes].sort(()=>Math.random()-0.5)};
+    });
+  } else if(id==='anatomie'){
+    const pool=anatomieData[diff];
+    themeData=pool.sort(()=>Math.random()-0.5).slice(0,10).map(item=>{
+      const correct=item.a;
+      const fakes=anatomieData[diff].map(e=>e.a).filter(a=>a!==correct).sort(()=>Math.random()-0.5).slice(0,3);
+      return{question:item.q,flag:null,answer:correct,options:[correct,...fakes].sort(()=>Math.random()-0.5)};
+    });
+  } else if(id==='astronomie'){
+    const pool=astronomieData[diff];
+    themeData=pool.sort(()=>Math.random()-0.5).slice(0,10).map(item=>{
+      const correct=item.a;
+      const fakes=astronomieData[diff].map(e=>e.a).filter(a=>a!==correct).sort(()=>Math.random()-0.5).slice(0,3);
+      return{question:item.q,flag:null,answer:correct,options:fakes.length>=3?[correct,...fakes].sort(()=>Math.random()-0.5):null};
+    });
+  } else if(id==='langues'){
+    const pool=languesData[diff];
+    themeData=pool.sort(()=>Math.random()-0.5).slice(0,10).map(item=>{
+      const correct=item.a;
+      const fakes=languesData[diff].map(e=>e.a).filter(a=>a!==correct).sort(()=>Math.random()-0.5).slice(0,3);
+      return{question:item.q,flag:null,answer:correct,options:fakes.length>=3?[correct,...fakes].sort(()=>Math.random()-0.5):null};
+    });
+  }
+}
+
+function renderThemeQuestion(){
+  if(themeIndex>=themeData.length){
+    document.getElementById('themes-playing').style.display='none';
+    document.getElementById('themes-select').style.display='block';
+    const pct=Math.round(themeScore/themeData.length*100);
+    alert('Terminé ! Score : '+themeScore+'/'+themeData.length+'\n'+
+      (pct>=80?'Excellent ! 🌟':pct>=60?'Bien joué ! 👍':'Continue à t\'entraîner !'));
+    return;
+  }
+  const item=themeData[themeIndex];
+  document.getElementById('th-num').textContent=themeIndex+1;
+  document.getElementById('th-score').textContent=themeScore;
+  document.getElementById('th-progress').style.width=((themeIndex+1)/themeData.length*100)+'%';
+  document.getElementById('th-question').textContent=item.question;
+  document.getElementById('th-feedback').className='feedback-box';
+  document.getElementById('th-next').style.display='none';
+  const flagEl=document.getElementById('th-flag');
+  if(item.flag){flagEl.style.display='block';flagEl.textContent=item.flag;}
+  else{flagEl.style.display='none';}
+  const ans=document.getElementById('th-answers');
+  ans.innerHTML='';
+  if(item.options&&item.options.length>=2){
+    item.options.forEach(o=>{
+      const btn=document.createElement('button');
+      btn.className='choice-btn';btn.textContent=o;
+      btn.onclick=()=>{
+        const ok=o===item.answer;
+        document.getElementById('th-feedback').className='feedback-box show '+(ok?'correct-fb':'wrong-fb');
+        document.getElementById('th-feedback').textContent=ok?'✓ Correct !':'✗ Faux — '+item.answer;
+        if(ok)themeScore++;
+        ans.querySelectorAll('button').forEach(b=>{
+          b.disabled=true;
+          if(b.textContent===item.answer)b.classList.add('correct');
+          else if(b.textContent===o&&!ok)b.classList.add('wrong');
+        });
+        document.getElementById('th-next').style.display='inline-block';
+      };
+      ans.appendChild(btn);
+    });
+  } else {
+    // réponse libre pour certains thèmes
+    const inp=document.createElement('input');
+    inp.className='input-answer';inp.placeholder='Ta réponse...';
+    ans.appendChild(inp);
+    const valider=document.createElement('button');
+    valider.className='btn-primary';valider.textContent='Valider';valider.style.marginTop='8px';
+    ans.appendChild(valider);
+    valider.onclick=()=>{
+      const given=inp.value.trim();if(!given)return;
+      const ok=given.toLowerCase().trim()===item.answer.toLowerCase().trim();
+      document.getElementById('th-feedback').className='feedback-box show '+(ok?'correct-fb':'wrong-fb');
+      document.getElementById('th-feedback').textContent=ok?'✓ Correct !':'✗ Faux — '+item.answer;
+      if(ok)themeScore++;
+      inp.disabled=true;valider.disabled=true;
+      document.getElementById('th-next').style.display='inline-block';
+    };
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')valider.click();});
+  }
+}
+
+function nextThemeQuestion(){
+  themeIndex++;
+  renderThemeQuestion();
+}
+
+/* ===== CATALOGUE ===== */
+function renderCatalogue(){
+  const search=(document.getElementById('search-input').value||'').toLowerCase().trim();
+  document.getElementById('cat-count').textContent=questions.length;
+  document.getElementById('cat-qcm').textContent=questions.filter(q=>q.type==='libre'||q.type==='qcm').length;
+  document.getElementById('cat-autres').textContent=questions.filter(q=>q.type==='vrai_faux').length;
+  const pills=document.getElementById('cat-pills');
+  pills.innerHTML='';
+  catList.forEach(c=>{
+    const count=c==='all'?questions.length:questions.filter(q=>q.category===c).length;
+    if(count===0&&c!=='all')return;
+    const btn=document.createElement('button');
+    btn.className='cat-pill'+(selectedCatCatalogue===c?' active':'');
+    btn.innerHTML=catLabels[c]+' <span style="opacity:0.6;font-size:10px">('+count+')</span>';
+    btn.onclick=()=>{selectedCatCatalogue=c;renderCatalogue();};
+    pills.appendChild(btn);
+  });
+  let filtered=selectedCatCatalogue==='all'?[...questions]:questions.filter(q=>q.category===selectedCatCatalogue);
+  if(search)filtered=filtered.filter(q=>q.question.toLowerCase().includes(search)||q.answer.toLowerCase().includes(search));
+  const list=document.getElementById('question-list');
+  list.innerHTML='';
+  if(filtered.length===0){list.innerHTML='<div class="question-item"><div class="question-item-a">Aucune question trouvée.</div></div>';return;}
+  filtered.forEach(q=>{
+    const div=document.createElement('div');
+    div.className='question-item';
+    div.innerHTML=`
+      <div class="question-item-q"><span class="tag ${getTag(q.category)}" style="margin-right:7px">${q.category}</span>${q.question}</div>
+      <div class="question-item-a">✓ ${q.answer} &nbsp;·&nbsp; ${q.type}${q.explication?'&nbsp;·&nbsp;📚 explication':''}
+      </div>
+      <div class="question-item-actions">
+        <button class="btn-edit" onclick="openEdit(${q.id})">✏️ Modifier</button>
+        <button class="btn-danger" onclick="deleteQuestion(${q.id})">🗑 Supprimer</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function deleteQuestion(id){
+  if(!confirm('Supprimer cette question ?'))return;
+  questions=questions.filter(q=>q.id!==id);
+  saveData();
+  renderCatalogue();renderStats();
+}
+
+/* ===== MODAL ÉDITION ===== */
+function openEdit(id){
+  const q=questions.find(x=>x.id===id);
+  if(!q)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-question').value=q.question;
+  document.getElementById('edit-type').value=q.type;
+  document.getElementById('edit-answer').value=q.answer;
+  document.getElementById('edit-category').value=q.category;
+  document.getElementById('edit-explication').value=q.explication||'';
+  const choices=q.choices||[];
+  ['ec1','ec2','ec3','ec4'].forEach((eid,i)=>{document.getElementById(eid).value=choices[i]||'';});
+  updateEditType();
+  document.getElementById('edit-feedback').className='feedback-box';
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('edit-modal').classList.remove('open');}
+function updateEditType(){
+  const t=document.getElementById('edit-type').value;
+  document.getElementById('edit-qcm-choices').style.display=t==='qcm'?'block':'none';
+}
+function saveEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const idx=questions.findIndex(q=>q.id===id);
+  if(idx===-1)return;
+  const t=document.getElementById('edit-type').value;
+  const q=questions[idx];
+  q.question=document.getElementById('edit-question').value.trim();
+  q.type=t;
+  q.answer=document.getElementById('edit-answer').value.trim();
+  q.category=document.getElementById('edit-category').value;
+  q.explication=document.getElementById('edit-explication').value.trim();
+  if(t==='qcm'){
+    const cs=['ec1','ec2','ec3','ec4'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);
+    q.choices=cs;
+    if(!cs.includes(q.answer))q.choices.push(q.answer);
+  }else if(t==='libre'){
+    const cs=['ec1','ec2','ec3','ec4'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);
+    if(cs.length>=2){q.choices=cs;if(!cs.includes(q.answer))q.choices.push(q.answer);}
+    else delete q.choices;
+  }else delete q.choices;
+  saveData();
+  const fb=document.getElementById('edit-feedback');
+  fb.className='feedback-box show correct-fb';
+  fb.textContent='✓ Question modifiée et sauvegardée !';
+  setTimeout(()=>{closeModal();renderCatalogue();},900);
+}
+
+/* ===== AJOUTER ===== */
+function updateFormType(){
+  const t=document.getElementById('new-type').value;
+  document.getElementById('qcm-choices').style.display=(t==='qcm'||t==='libre')?'block':'none';
+  document.getElementById('new-answer').placeholder=t==='vrai_faux'?'"Vrai" ou "Faux"':'La bonne réponse exacte';
+}
+function addQuestion(){
+  const q=document.getElementById('new-question').value.trim();
+  const t=document.getElementById('new-type').value;
+  const a=document.getElementById('new-answer').value.trim();
+  const cat=document.getElementById('new-category').value;
+  const expl=document.getElementById('new-explication').value.trim();
+  const fb=document.getElementById('add-feedback');
+  if(!q||!a){fb.className='feedback-box show wrong-fb';fb.textContent='⚠ Remplis au moins la question et la bonne réponse.';return;}
+  const newQ={id:nextId++,question:q,type:t,answer:a,category:cat,explication:expl};
+  if(t==='qcm'||t==='libre'){
+    const cs=['c1','c2','c3','c4'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);
+    if((t==='qcm')&&cs.length<2){fb.className='feedback-box show wrong-fb';fb.textContent='⚠ Ajoute au moins 2 choix pour un QCM.';return;}
+    if(cs.length>=2){if(!cs.includes(a))cs.push(a);newQ.choices=cs;}
+  }
+  questions.push(newQ);
+  saveData();
+  fb.className='feedback-box show correct-fb';
+  fb.textContent='✓ Ajoutée et sauvegardée ! Catalogue : '+questions.length+' questions.';
+  document.getElementById('new-question').value='';
+  document.getElementById('new-answer').value='';
+  document.getElementById('new-explication').value='';
+  ['c1','c2','c3','c4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderStats();
+}
+
+/* ===== INIT ===== */
+loadData();
+buildCatFilters();
+renderQOD();
+renderStats();
+updateFormType();
+</script>
+</body>
+</html>
